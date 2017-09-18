@@ -1,0 +1,43 @@
+function [y, n] = asrSteroids(f,a,b,tol,nodes, fa, fb, level, max_level)
+level = level + 1;
+% fi -> co
+
+
+%where a and b already belong to nodes
+h = b-a; c = (a+b)/2;
+fc = f(c);
+if ismember(c,nodes) == 0
+nodes(end+1) = c;
+end
+n = nodes;
+%
+% approximate the itegral using one simpson iteration
+s1 = h/6*(fa + 4*fc + fb);
+d = (a+c)/2; e = (c+b)/2;
+% approximate the integral with two iterations
+s2 = h/12*(fa + 4*f(d) + 2*fc + 4*f(e) + fb);
+
+if (level >= max_level)
+    
+    y = s2;
+
+else    
+    % check if the error is less than the tolerance
+    if abs(s2 - s1) <= 15*tol
+        y = s2 + 1/15*(s2 - s1);
+    else
+        [ls, ln] = asrSteroids(f,a,c,tol/2, n, fa, fc,level,max_level);
+        [rs, rn] = asrSteroids(f,c,b,tol/2, n, fc, fb,level,max_level);
+        y = ls + rs;
+        n = [ln rn];
+        %combine vectors without repeats say
+        for i = 1:length(ln)
+            if ismember(ln(i),rn) == 0
+                rn(end+1) = ln(i);
+            end
+        end
+        n = rn; 
+    end
+
+end
+
